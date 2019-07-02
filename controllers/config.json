@@ -1,0 +1,4 @@
+{
+    "secret": "some-secret-shit-goes-here",
+    "tokenLife": 10000
+}
