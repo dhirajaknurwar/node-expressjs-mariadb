@@ -36,7 +36,7 @@ router.post('/createParking', async (req, res) => {
                     console.log(result);
                     res.status(200).send({
                         status: 200,
-                        meaasge: 'created success',
+                        message: 'created success',
                         data: result
                     }
                     );
@@ -49,7 +49,7 @@ router.post('/createParking', async (req, res) => {
                 {
                     status: 401,
                     success: false,
-                    meaasge: 'unathorized user, login and try again.'
+                    message: 'unathorized user, login and try again.'
                 });
         }
 
@@ -122,7 +122,7 @@ router.post('/getNearByParking', async (req, res) => {
                 {
                     status: 401,
                     success: false,
-                    meaasge: 'unathorized user, login and try again.'
+                    message: 'unathorized user, login and try again.'
                 });
         }
 
