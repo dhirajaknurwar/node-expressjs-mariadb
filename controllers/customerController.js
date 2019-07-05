@@ -44,6 +44,107 @@ router.post('/createCustomer', async (req, res) => {
     }
 })
 
+router.post('/getOtpNew', (req, res) => {
+    var jsondata = req.body;
+    var password = Math.floor(1000 + Math.random() * 9000).toString();
+    return new Promise((resolve, reject) => {
+        //check wheather input parameter has value or not
+        console.log('-----------------------jsondata-------', jsondata);
+        console.log('-----------------------mobile-------', jsondata.mobile);
+        if (typeof (jsondata.mobile) == 'undefined' || jsondata.mobile == '') {
+            console.log('-----------------------mobile-------', jsondata.mobile);
+            res.status(404).send({ message: 'mobile number should not be empty', status: false });
+        } else {
+            pool.getConnection().then(conn => {
+                conn.query("SELECT name FROM customer WHERE mobile='" + req.body.mobile + "'").then(result => {
+                    if (result != null && (result.length == 0)) {
+                        console.log("-------insie if -------");
+                        conn.query("INSERT INTO customer SET name='" + jsondata.name + "' , " + " mobile='" + jsondata.mobile + "', " + " device_type='"
+                            + jsondata.device_type + "' , " + " device_token='" + jsondata.device_token + "'"
+                            + ",  otp='" + password + "'").then(insertResult => {
+
+                                console.log(insertResult);
+                                if (conn) {
+                                    conn.release();
+                                }
+
+                                //CODE TO SEND SMS
+                                // request
+                                // .get('http://bulk.sms-india.in/send.php?usr=25748&pwd=123456&sndr=GRYTKT&ph=' + username + '&text=OTP for Validation is ' + password)
+                                // .on('response', function (response) {
+                                //     console.log(response);
+                                // });
+
+                                res.status(200).send({
+                                    status: 200,
+                                    message: 'new user created - OTP sent to registered mobile',
+                                    otp: password,
+                                    data: result
+                                });
+                            });
+
+                    } else {
+                        var obj = JSON.stringify(result[0]);
+                        var jsondataObj = JSON.parse(obj);
+
+                        conn.query("UPDATE customer SET otp='" + password + "' , device_token='"
+                            + req.body.device_token
+                            + "' , device_type='" + req.body.device_type
+                            + "' , name='" + req.body.name
+                            + "' " + " WHERE mobile ='" + req.body.mobile + "'").then(updateResult => {
+
+                                console.log(obj);
+
+                                if (conn) {
+                                    conn.release();
+                                }
+                                res.status(200).send({
+                                    status: 200,
+                                    message: 'user found - OTP sent to registered mobile',
+                                    otp: password,
+                                    data: jsondataObj
+                                });
+
+                            }).catch((error) => {
+                                reject({
+                                    message: error,
+                                    status: false
+                                })
+                            }).finally({
+                                if(conn) {
+                                    conn.release();
+                                }
+                            });
+                    }
+
+                }).catch((error) => {
+                    if (conn) {
+                        conn.release();
+                    }
+                    reject({
+                        status: 404,
+                        message: 'invalid input'
+                    })
+
+                }).finally({
+                    if(conn) {
+                        conn.release();
+                    }
+                });
+            }).catch((error) => {
+                reject({
+                    message: 'db not connected' + error,
+                    status: false
+                })
+            })
+
+        }
+
+
+    })
+
+});
+
 
 //GET OTP
 router.post("/getOtp", async (req, res) => {
@@ -74,7 +175,7 @@ router.post("/getOtp", async (req, res) => {
             //     console.log(response);
             // });
 
-         
+
             res.send({
                 status: 200,
                 message: 'new user created - OTP sent to registered mobile',

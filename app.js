@@ -22,12 +22,28 @@ var bodyParser = require('body-parser')
 var express = require('express')
 var app = express();
 
+
+var allowCrossDomain = function (req, res, next) {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,PATCH,OPTIONS');
+    res.header('Access-Control-Allow-Headers', '*');
+    res.set('Access-Control-Allow-Headers', 'X-Requested-With', 'Content-Type', 'Authorization');
+
+    if (req.method == 'OPTIONS') {
+        res.status(200).end();
+    } else {
+        next();
+    }
+}
+
+
 // app.use(bodyParser.json());       // to support JSON-encoded bodies
 // app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
 //     extended: true
 // }));
 
 app.use(cors());
+app.use(allowCrossDomain);
 app.use(bodyParser.urlencoded({
     limit: '50mb',
     extended: true
